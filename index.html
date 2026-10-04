@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roleta Virtual do Bingo (1-75)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #1a73e8;
+            margin-bottom: 10px;
+        }
+
+        .container-roleta {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* O "Visor" da Roleta que exibe o número */
+        .roleta-visor {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff 40%, #e8f0fe 100%);
+            border: 8px solid #1a73e8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #1a73e8;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            transition: transform 0.5s ease-out;
+        }
+
+        /* Animação de giro */
+        .girando {
+            animation: girarVisor 0.5s linear infinite;
+        }
+
+        @keyframes girarVisor {
+            0% { transform: rotate(0deg); border-color: #1a73e8; }
+            25% { border-color: #34a853; }
+            50% { border-color: #fbbc05; }
+            75% { border-color: #ea4335; }
+            100% { transform: rotate(360deg); border-color: #1a73e8; }
+        }
+
+        .botoes-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            background-color: #1a73e8;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #1557b0;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Botão de Reiniciar jogo */
+        .btn-reiniciar {
+            background-color: #5f6368;
+        }
+        .btn-reiniciar:hover {
+            background-color: #3c4043;
+        }
+
+        /* Container das Tabelas */
+        .tabelas-secao {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .painel-numeros {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            flex: 1;
+            min-width: 320px;
+        }
+
+        .painel-numeros h2 {
+            font-size: 1.2rem;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+
+        .sorteados h2 { color: #34a853; }
+        .faltam h2 { color: #ea4335; }
+
+        .grade-numeros {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 6px;
+            margin-top: 15px;
+        }
+
+        /* Ajuste para telas pequenas (celular) para a tabela não quebrar */
+        @media (max-width: 480px) {
+            .grade-numeros {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        .quadradinho {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 35px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        /* Estilos dos quadradinhos nas tabelas */
+        .sorteados .quadradinho {
+            background-color: #e6f4ea;
+            color: #137333;
+            border: 1px solid #ceead6;
+        }
+
+        .faltam .quadradinho {
+            background-color: #fce8e6;
+            color: #c5221f;
+            border: 1px solid #fad2cf;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Bingo 1 ao 75</h1>
+    
+    <div class="container-roleta">
+        <div id="visor" class="roleta-visor">--</div>
+        <div class="botoes-container">
+            <button id="btnGirar" onclick="girarRoleta()">Girar Roleta</button>
+            <button class="btn-reiniciar" onclick="reiniciarJogo()">Reiniciar</button>
+        </div>
+    </div>
+
+    <div class="tabelas-secao">
+        <!-- Números que Faltam Sair -->
+        <div class="painel-numeros faltam">
+            <h2>Faltam Sair (<span id="qtdFaltam">75</span>)</h2>
+            <div id="gradeFaltam" class="grade-numeros"></div>
+        </div>
+
+        <!-- Números que Já Sairam -->
+        <div class="painel-numeros sorteados">
+            <h2>Já Sorteadas (<span id="qtdSorteados">0</span>)</h2>
+            <div id="gradeSorteados" class="grade-numeros"></div>
+        </div>
+    </div>
+
+    <script>
+        const totalNumeros = 75; // Ajustado para 75 números
+        let numerosFaltam = [];
+        let numerosSorteados = [];
+
+        const visor = document.getElementById('visor');
+        const btnGirar = document.getElementById('btnGirar');
+        const gradeFaltam = document.getElementById('gradeFaltam');
+        const gradeSorteados = document.getElementById('gradeSorteados');
+        const qtdFaltam = document.getElementById('qtdFaltam');
+        const qtdSorteados = document.getElementById('qtdSorteados');
+
+        // Inicializa ou reseta as variáveis do jogo
+        function iniciarDados() {
+            numerosFaltam = Array.from({length: totalNumeros}, (_, i) => i + 1);
+            numerosSorteados = [];
+            visor.innerText = '--';
+            btnGirar.disabled = false;
+            btnGirar.innerText = "Girar Roleta";
+            atualizarTelas();
+        }
+
+        // Atualiza as tabelas e contadores na tela
+        function atualizarTelas() {
+            qtdFaltam.innerText = numerosFaltam.length;
+            qtdSorteados.innerText = numerosSorteados.length;
+
+            // Renderiza tabela dos que Faltam (ordem crescente)
+            gradeFaltam.innerHTML = '';
+            numerosFaltam.forEach(num => {
+                const div = document.createElement('div');
+                div.className = 'quadradinho';
+                div.innerText = num;
+                gradeFaltam.appendChild(div);
+            });
+
+            // Renderiza tabela dos Sorteados (ordenados para fácil conferência)
+            gradeSorteados.innerHTML = '';
+            [...numerosSorteados].sort((a, b) => a - b).forEach(num => {
+                const div = document.createElement('div');
+                div.className = 'quadradinho';
+                div.innerText = num;
+                gradeSorteados.appendChild(div);
+            });
+        }
+
+        function girarRoleta() {
+            if (numerosFaltam.length === 0) {
+                alert('Todos os 75 números já foram sorteados!');
+                return;
+            }
+
+            btnGirar.disabled = true;
+            visor.classList.add('girando');
+
+            // Efeito visual de alternância rápida de números
+            let alternador;
+            alternador = setInterval(() => {
+                const numAleatorioTemporario = numerosFaltam[Math.floor(Math.random() * numerosFaltam.length)];
+                visor.innerText = numAleatorioTemporario;
+            }, 70);
+
+            // Determina o número final após 1.5 segundos
+            setTimeout(() => {
+                clearInterval(alternador);
+                visor.classList.remove('girando');
+
+                const indiceSorteado = Math.floor(Math.random() * numerosFaltam.length);
+                const numeroFinal = numerosFaltam.splice(indiceSorteado, 1)[0];
+                
+                numerosSorteados.push(numeroFinal);
+                visor.innerText = numeroFinal;
+
+                atualizarTelas();
+
+                if (numerosFaltam.length > 0) {
+                    btnGirar.disabled = false;
+                } else {
+                    btnGirar.innerText = "Fim do Jogo!";
+                }
+            }, 1500); 
+        }
+
+        function reiniciarJogo() {
+            if (confirm("Deseja mesmo reiniciar o bingo e limpar todos os números sorteados?")) {
+                iniciarDados();
+            }
+        }
+
+        // Executa ao abrir a página
+        iniciarDados();
+    </script>
+</body>
+</html>
